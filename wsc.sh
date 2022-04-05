@@ -1,5 +1,5 @@
 #!/bin/bash
-# ./wsc.sh path name [-ar]
+# ./wsc.sh path [name] [-ar]
 
 name=${2:-a.out}
 g++ pre.cpp -o pre
