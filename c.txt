@@ -1,0 +1,6 @@
+    clear(labelPtrStack)
+    clear(stack)
+    clear(heap)
+    
+    return 0;
+}

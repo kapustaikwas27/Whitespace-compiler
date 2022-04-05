@@ -1,0 +1,194 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define create(s, v, t) \
+    v.mem = (t*)malloc(s * sizeof(t)); \
+    v.sz = s; \
+    v.len = 0;
+
+#define get(i, v) ({ \
+    v.mem[i]; \
+})
+
+#define set(c, i, v, t) \
+    if (i >= v.sz) { \
+        v.sz = max(v.sz<<1, (i)+1); \
+        v.mem = (t*)realloc(v.mem, v.sz * sizeof(t)); \
+    } \
+    v.mem[i] = c; \
+    v.len = max(v.len, (i)+1);
+
+#define clear(v) \
+    free(v.mem); \
+    v.mem = NULL;
+
+#define arithmetic(o) \
+    do { \
+        int _tmp1 = take(); \
+        int _tmp2 = take(); \
+        push(_tmp2 o _tmp1); \
+    } while (0);
+
+/* ADD */
+#define add arithmetic(+)
+
+/* SUB */
+#define sub arithmetic(-)
+
+/* MUL */
+#define mul arithmetic(*)
+
+/* DIV */
+#define div arithmetic(/)
+
+/* MOD */
+#define mod arithmetic(%)
+
+/* JMP */
+#define jmp(label) goto label;
+
+/* JZ */
+#define jz(label) if (take() == 0) goto label;
+
+/* JN */
+#define jn(label) if (take() < 0) goto label;
+
+/* END */
+#define end \
+    clear(labelPtrStack) \
+    clear(stack) \
+    clear(heap) \
+    return 0;
+
+#define cat(x, y) x ## y
+
+#define xcat(x, y) cat(x, y)
+
+/* CALL */
+#define call(label) \
+    do { \
+        lpsPush(&&xcat(_label_, __LINE__)); \
+        goto label; \
+        xcat(_label_, __LINE__):; \
+    } while(0);
+
+/* RET */
+#define ret \
+    do { \
+        void* _labelPointer = lpsPop(); \
+        goto *_labelPointer; \
+    } while (0);
+
+typedef unsigned long long ull;
+
+/* Vector to simulate stack and heap */
+struct vec {
+    int* mem;
+    ull sz;
+    ull len;
+};
+
+/* Label pointer stack */
+struct lps {
+    void** mem;
+    ull sz;
+    ull len;
+} labelPtrStack;
+
+struct vec stack;
+struct vec heap;
+int integer;
+char character;
+
+ull max(ull a, ull b) {
+    return (a < b) ? b : a;
+}
+
+void lpsPush(void* labelPtr) {
+    set(labelPtr, labelPtrStack.len, labelPtrStack, void*)
+}
+
+void* lpsPop() {
+    labelPtrStack.len--;
+    return get(labelPtrStack.len, labelPtrStack);
+}
+
+/* PUSH */
+void push(int c) {
+    set(c, stack.len, stack, int)
+}
+
+/* DROP */
+void drop() {
+    stack.len--;
+}
+
+int take() {
+    stack.len--;
+    return stack.mem[stack.len];
+}
+
+/* DUP */
+void dup() {
+    push(get(stack.len-1, stack));
+}
+
+/* SWAP */
+void swap() {
+    int a = take(), b = take();
+    push(a);
+    push(b);
+}
+
+/* COPY */
+void copy(ull i) {
+    push(get(stack.len-i-1, stack));
+}
+
+/* SLIDE */
+void slide(ull i) {
+    stack.mem[stack.len-i-1] = stack.mem[stack.len-1];
+    stack.len -= i;
+}
+
+/* STORE */
+void store() {
+    int a = take(), b = take();
+    set(a, b, heap, int)
+}
+
+/* RETRIEVE */
+void retrieve() {
+    int a = take();
+    push(get(a, heap));
+}
+
+/* PRINTC */
+void printc() {
+    printf("%c", (char)take());
+}
+
+/* PRINTI */
+void printi() {
+    printf("%d", take());
+}
+
+/* READC */
+void readc() {
+    int a = take();
+    scanf("%c", &character);
+    set(character, a, heap, int)
+}
+
+/* READI */
+void readi() {
+    int a = take();
+    scanf("%d", &integer);
+    set(integer, a, heap, int)
+}
+
+int main() {
+    create(4, labelPtrStack, void*)
+    create(4, stack, int)
+    create(4, heap, int)
+
