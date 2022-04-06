@@ -2,38 +2,43 @@
 #include <string>
 #include <map>
 
-#define ignoreBlackspaces \
-    while (cin.get(whitespace) \
-    && whitespace != ' ' \
-    && whitespace != '\t' \
-    && whitespace != '\n');
-
-#define check(s) \
-    map<string, int>::iterator it = labels.find(s); \
-    if (it == labels.end()) { \
-        iarg = labels.size(); \
-        labels[s] = iarg; \
-    } else { \
-        iarg = it->second; \
-    }
-
-#define convert \
-    int i = 30; \
-    while (i >= 0 && !(iarg & (1 << i))) { \
-        i--; \
-    } \
-    for (; i>=0; i--) { \
-        if (iarg & (1 << i)) { \
-            cout << '\t'; \
-        } else { \
-            cout << ' '; \
-        } \
-    } \
-    cout << '\n';
-
 using namespace std;
 
 map<string, int> labels;
+
+void ignoreNonWhitespace(char* whitespace) {
+    while (cin.get(*whitespace)
+       && *whitespace != ' '
+       && *whitespace != '\t'
+       && *whitespace != '\n');
+}
+
+void check(const string& label, int* iarg) {
+    map<string, int>::iterator it = labels.find(label);
+    
+    if (it == labels.end()) {
+        *iarg = labels.size();
+        labels[label] = *iarg;
+    } else {
+        *iarg = it->second;
+    }
+}
+
+void convert(int iarg) {
+    int i = 30;
+    
+    while (i >= 0 && !(iarg & (1 << i)))
+        i--;
+    
+    for (; i>=0; i--) {
+        if (iarg & (1 << i))
+            cout << '\t';
+        else
+            cout << ' ';
+    }
+    
+    cout << '\n';
+}
 
 int getArg(bool label) {
     char whitespace;
@@ -43,7 +48,7 @@ int getArg(bool label) {
     if (label) {
         isPositive = 1;
     } else {
-        ignoreBlackspaces
+        ignoreNonWhitespace(&whitespace);
         
         if (whitespace == ' ') {
             isPositive = 1;
@@ -55,7 +60,7 @@ int getArg(bool label) {
     }
     
     do {
-        ignoreBlackspaces
+        ignoreNonWhitespace(&whitespace);
         
         if (whitespace == ' ') {
             number <<= 1;
@@ -77,7 +82,7 @@ void printArg(bool label) {
     
     if (label) {
         cin >> sarg;
-        check(sarg)
+        check(sarg, &iarg);
     } else {
         cin >> iarg;
         
@@ -89,7 +94,7 @@ void printArg(bool label) {
         }
     }
     
-    convert
+    convert(iarg);
 }
 
 void translate1() {
@@ -265,8 +270,8 @@ void translate3() {
         } else {
             cout << "\n  ";
             command = command.substr(0, command.size()-1);
-            check(command)
-            convert
+            check(command, &iarg);
+            convert(iarg);
         }
     }
 }
@@ -288,5 +293,5 @@ int main(int argc, char** argv) {
         cout << "usage: ./pre [-ar]\n\nWhitespace to C translator\n-a translates from Whitespace Assembler to C\n-r translates from Whitespace Assembler to Whitespace";
     }
 	
-	return 0;
+    return 0;
 }
